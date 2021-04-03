@@ -29,7 +29,7 @@
          </el-row>
          <el-row  class="name">  <el-col :span="24" ><div>{{teacher.tname}}</div></el-col></el-row>
          <el-row style="background-color: #cccccc;margin-top: 5px;text-align: center">  <el-col :span="12" :offset="6"><div>{{teacher.job}}</div></el-col></el-row>
-         <el-row><el-col :span="24" ><el-button type="text" class="topaper" icon="el-icon-document-copy" @click="$router.push({path: '/paper',query: {path: teacher.path,name: teacher.tname,job: teacher.job,id: teacher.tid}})">试卷库</el-button></el-col></el-row>
+         <el-row><el-col :span="24" ><el-button type="text" class="topaper" icon="el-icon-document-copy" @click="jumpto">试卷库</el-button></el-col></el-row>
      </el-aside>
      <div>
      <el-container class="main">
@@ -42,7 +42,7 @@
          </el-header>
      <div>
          <div class="class-item clearfix">
-         <class-item v-for="(item,index) in classList" :key="index" :clas="item" @reload="reload"></class-item>
+         <class-item v-for="(item,index) in classList" :key="index" :clas="item" @reload="reload" @tostatus="tostatus"></class-item>
          </div>
      </div>
      </el-container>
@@ -60,6 +60,7 @@
         name: "hello",
         data() {
             return {
+
                 count: this.$store.state.username,
                 formdata: '',
                 checkList: [],
@@ -79,6 +80,13 @@
             classItem
         },
         methods: {
+            tostatus(a) {
+                this.$router.push({path: '/finishstatus',query: {path: this.teacher.path,name: this.teacher.tname,job: this.teacher.job,cid: a}})
+            },
+            jumpto() {
+
+                this.$router.push({path: '/paper',query: {path: this.teacher.path,name: this.teacher.tname,job: this.teacher.job}})
+            },
             limit() {
                 if(this.className.length < 3) {
                     this.disable = true
@@ -164,11 +172,11 @@
                 }
             }).then(res => {
                 // console.log(res.data)
-                console.log(res.data)
+
            this.teacher = res.data
-                console.log(this.teacher)
-                console.log(this.teacher.path)
-                console.log(this.teacher['id'])
+                this.$store.state.teacher =  this.teacher
+                this.$store.state.id = this.teacher.tid
+
             })
 //             console.log(this.teacher)
 // console.log(this.teacher.id)

@@ -1,30 +1,67 @@
 <template>
+
    <div class="paper-view">
+       <el-dialog
+               :visible.sync="dialogVisible"
+               width="30%">
+           <span style="font-weight: bold;font-size: 17px">试卷名称:</span>&nbsp;&nbsp;<span style="color: orange">必填:</span>
+           <el-input type="text"  v-model.lazy="paperName" :minlength="3" :maxlength="20" show-word-limit @input="limit"/>
+           <span slot="footer" class="dialog-footer">
+    <el-button @click="dialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addpaper"  :disabled="disable"	>确 定</el-button>
+  </span>
+
+       </el-dialog>
        <el-container class="container">
            <el-aside style="width: 80px" class="aside">
 <div class="head"> <img  :src="'http://192.168.3.13:8083/image/'+$route.query.path" alt=""    /></div>
                <div class="name">{{$route.query.name}}</div>
                <div class="job">{{$route.query.job}} </div>
-               <el-button type="text"  class="toback" icon="el-icon-school" @click="$router.go(-1)">课程班级</el-button>
+               <el-button type="text"  class="toback" icon="el-icon-school" @click="$router.push('/TeacherView/'+$store.state.username)">课程班级</el-button>
            </el-aside>
-           <el-main><div class="header"><span>试卷库</span><el-button type="text"  style="margin-left: 30px" icon="el-icon-plus">新建试卷</el-button></div>
+           <el-main><div class="header"><span>试卷库</span><el-button type="text"  style="margin-left: 30px" icon="el-icon-plus" @click="dialogVisible = true">新建试卷</el-button></div>
                <div class="main">
 
                    <div class="describe">
-             <el-table :data="paperlist" height="250"  border style="width: 100%">
+             <el-table :data="paperlist"   border style="width: 100%">
                  <el-table-column prop="pid"  label="试卷id" width="180" v-if="false"></el-table-column>
                  <el-table-column prop="title"  width="430" label="试卷名"  class="paper-name"></el-table-column>
                  <el-table-column prop="date"  width="430" label="修改时间"></el-table-column>
                  <el-table-column width="490" label="操作"> <template slot-scope="scope">
-                     <el-button type="text" @click="editpaper(scope.row.pid)">编辑</el-button>
-                     <el-button type="text" >发布</el-button><el-button type="text"  @click="delpaper(scope.row.pid)">删除</el-button></template></el-table-column>
+                     <el-button type="text" @click="editpaper(scope.row.pid,scope.row.title)">编辑</el-button>
+                     <el-button type="text" @click="publish(scope.row.pid)" >发布</el-button><el-button type="text"  @click="delpaper(scope.row.pid)">删除</el-button></template></el-table-column>
              </el-table>
                    </div>
 
                </div></el-main>
 
        </el-container>
+     <el-dialog
+     :visible.sync="visible"
+     width="50%"
+     :before-close="beforeclose"
 
+     >
+         <div style="margin-left: 260px;margin-bottom: 50px">
+             <el-date-picker
+                     v-model="time"
+                     type="datetime"
+                     placeholder="选择日期时间"
+                     value-format="yyyy-MM-dd HH:mm:ss"
+                     :default-value="new Date()"
+             >
+             </el-date-picker>
+         </div>
+         <el-transfer
+
+                 v-model="chosen"
+                 style="margin-left: 50px"
+                 :data="classList"
+         >
+         </el-transfer>
+
+         <el-button type="primary" @click="publish1" style="margin: 20px 45%">发布</el-button>
+     </el-dialog>
 
     </div>
 </template>
@@ -38,17 +75,155 @@
         name: "paper",
         components: {PaperItem},
         data() {
+
            return {
+
+
+               time: '',
+               chosen: [],
+               count: this.$store.state.username,
+               visible: false,
                paperlist: [],
+               dialogVisible: false,
+               paperName: '',
+               disable: true,
+               data: [],
+            classList: [],
+               currentpid: ''
 
            }
         },
         methods: {
-            delpaper(a) {
+            publish1() {
+
+
+              if(this.chosen.length === 0){
+                  this.$message.error('请选择一个班级');
+
+              }
+              else if(this.time === ''){
+                  this.$message.error('请选择截止时间');
+              }
+
+              else{
+
+                  request({
+                      url: "publishpaper",
+                      data: {
+                          pid: this.currentpid,
+                          classid: this.chosen,
+                          tid: Number(this.$store.state.id),
+                          deadline: this.time
+                      }
+                  }).then(()=>{
+                      this.chosen = []
+                      this.visible = false
+                      this.classList = []
+                      this.time = ''
+                  }).catch(()=>{
+                      this.chosen = []
+                      this.visible = false
+                      this.classList = []
+                      this.time = ''
+                  })
+              }
+
+
 
             },
-            editpaper(a) {
-                this.$router.push('/editpage/'+a)
+            beforeclose() {
+                this.classList = []
+                this.chosen = []
+                this.visible =  false
+            },
+            publish(a){
+                this.currentpid = a
+                request({
+                    url: '/selectClass',
+                    params: {
+                        id:  this.count
+                    }
+
+                }).then(res => {
+                    this.data = res.data
+
+                    console.log(res.data)
+                    console.log(this.data)
+                    for(let item of this.data){
+                        this.classList.push({
+                            key: item.cid,
+                            label: item.classname
+
+                        })
+                        this.visible = true
+
+
+                    }
+
+                })
+
+
+            },
+            limit() {
+                if(this.paperName.length < 3) {
+                    this.disable = true
+                }
+                else {
+                    this.disable = false
+                }},
+            addpaper() {
+                this.dialogVisible = false
+
+                request({
+                    url: "addpaper",
+                    data: {
+                        teacherid: this.$store.state.id,
+                        title: this.paperName
+
+                    }
+                }).then(()=>{
+                    request({
+                        url: '/selectpaper',
+                        params: {id: this.$store.state.id}
+                    }).then(res => {
+                        this.paperName = ''
+                        this.paperlist = res.data
+
+                    })
+                })
+
+            },
+
+            delpaper(a) {
+                this.$confirm("确认删除该题目吗?", '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(()=>{
+                    request({
+                      url:  "delpaper",
+                        params: {
+                            id: a
+                        }
+                    }).then(()=>{
+                        let i = 0
+                        for(let item of this.paperlist){
+                            if(a === item.pid){
+                                break;
+                            }
+                            i++
+                        }
+                        this.paperlist.splice(i,1)
+
+                        this.$message({
+                            message: '删除成功',
+                            type: 'success'
+                        });
+                    })
+                })
+            },
+            editpaper(a,b) {
+                this.$router.push('/editpage/'+a+'/'+b)
                 this.iseditpaper = true
                 console.log(a)
             }
@@ -57,7 +232,7 @@
         created() {
             request({
                 url: '/selectpaper',
-                params: {id: this.$route.query.id}
+                params: {id: this.$store.state.id}
             }).then(res => {
                 this.paperlist = res.data
                 console.log( this.paperlist)
@@ -68,6 +243,8 @@
 </script>
 
 <style scoped>
+
+
 .paper-view{
     width: 100%;
     height: 100%;

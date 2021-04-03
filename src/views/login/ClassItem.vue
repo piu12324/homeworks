@@ -1,6 +1,7 @@
 <template>
     <el-container class="main">
 
+
         <el-header class="header" height="60px" style="border-bottom: 3px #b8b9b8 solid">
             <el-row>
                 <el-col :span="2" ><div style="border-bottom: #417dff solid 3px;color: #417dff;width: 75px">我教的课</div></el-col>

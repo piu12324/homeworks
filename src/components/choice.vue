@@ -2,7 +2,7 @@
     <div>
         <div class="choice-item">
 
-  <div class="choice-head">  <span>{{index+1+'.'+' '}}{{choice.title}}</span> <el-button type="text" icon="el-icon-delete" class="del"></el-button> <el-button type="text" icon="el-icon-edit" class="edit"></el-button> </div>
+  <div class="choice-head"> <span>{{index+1+'.'+' '}}{{choice.title}}</span> <el-button type="text" icon="el-icon-delete" class="del" @click="del"></el-button> <el-button type="text" icon="el-icon-edit" class="edit"></el-button> </div>
            <div style="margin-top: 12px">
             <div class="option"><span class="op_a op-text" :class="{op_a_active: choice.answer === 0}">{{choice.op_a}}</span></div>
             <div class="option"><span class="op_b op-text" :class="{op_b_active: choice.answer === 1}">{{choice.op_b}}</span></div>
@@ -16,11 +16,51 @@
 </template>
 
 <script>
+    import {request} from "../network/request";
+
+
     export default {
         name: "choice",
         data() {
             return{
                 width: []
+            }
+        },
+        methods: {
+            del() {
+                const a =this.choice
+                this.$confirm("确认删除该题目吗?", '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(()=>{
+                    if(this.choice.choiceid === 0) {
+                        this.$emit("delChoice1",this.index)
+                        this.$message({
+                            message: '删除成功',
+                            type: 'success'
+                        });
+                    }
+                    else{   request({
+                        url: 'deltopic',
+                        params: {
+                            type: "choice",
+                            id: this.choice.choiceid
+                        }
+                    }).then((res)=>{
+
+                        this.$emit("delChoice",a)
+                        this.$message({
+                            message: '删除成功',
+                            type: 'success'
+                        });
+
+                    })}
+
+                })
+
+
+
             }
         },
         props: {

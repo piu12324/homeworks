@@ -62,7 +62,7 @@
   </span>
         </el-dialog>
 
-        <div :class="random()" class="move">
+        <div :class="random" class="move">
             <div class="class-id">{{classMsg}}</div>
             <div class="class-name">{{clas.classname}}</div>
 
@@ -75,8 +75,9 @@
                 <el-row><el-col :span="12" :offset="6"><el-button plain type="primary" @click="manageStudent(clas.cid)">管理</el-button></el-col></el-row>
         <el-row><el-col :span="12" :offset="6"><el-button plain type="primary" @click="dialogVisible = true">编辑</el-button></el-col></el-row>
                 <el-row> <el-col :span="12" :offset="6"> <el-button plain type="primary" @click="del(clas.cid)" >删除</el-button></el-col>  </el-row>
+                <el-row> <el-col :span="12" :offset="6"> <el-button plain type="primary" @click="check(clas.cid)" >作业情况</el-button></el-col>  </el-row>
 
-                <el-button type="text" icon="el-icon-more-outline" class="ellipsis" slot="reference"></el-button></el-popover>
+                <el-button type="text" icon="el-icon-more-outline" class="ellipsis" slot="reference" size="medium" style="font-size: 22px"></el-button></el-popover>
 <!--    <img src="../assets/img/ellipsis.svg" alt="">-->
             <div  class="class-num">  <div class="people"><span>{{clas.num}}</span></div></div>
 
@@ -101,6 +102,9 @@
             classMsg() {
                 //return "课程号:"+this.clas.cid+'\xa0\xa0\xa0\xa0'+this.clas.classname
                 return "课程号:"+this.clas.cid
+            }, random() {
+                let a = ["class-item-one","class-item-two","class-item-three","class-item-four","class-item-one"]
+                return a[Math.ceil(Math.random()*4)]
             }
         },
         methods: {
@@ -114,6 +118,10 @@
                 }
                 else return ''
             },
+            check(a){
+
+                this.$emit("tostatus",a)
+            },
             beforeClose() {
                 this.$emit("reload")
                 this.dialogManage = false
@@ -126,6 +134,10 @@
                         sid: a
                     }
                 }).then(res => {
+                    this.$message({
+                        message: '操作成功',
+                        type: 'success'
+                    });
                    this.student = res.data
 
                 })
@@ -173,10 +185,7 @@
                 this.$emit("reload")
 
             },
-            random() {
-                let a = ["class-item-one","class-item-two","class-item-three","class-item-four","class-item-one"]
-               return a[Math.ceil(Math.random()*4)]
-            },
+
             edit() {
             },
 
@@ -281,7 +290,7 @@
         height: 40px;
         position: absolute;
         right: 3px;
-        top: 0px;
+        top: -2px;
         color: white;
     }
     .class-id{

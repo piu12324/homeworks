@@ -23,8 +23,13 @@ const routes = [
       component: ()=> import('../views/login/hello')
     },]
   },
-  {path: '/editpage/:pid',
+  {path: '/editpage/:pid/:name',
     component: ()=>import('../views/login/editpage')
+
+  },
+  {
+    path: '/finishstatus',
+    component: () => import('../views/login/finishstatus')
 
   },
 
@@ -60,6 +65,7 @@ const router = new VueRouter({
   routes
 })
 router.beforeEach((to,from,next) => {
+
 
  next()
 
